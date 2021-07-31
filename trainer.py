@@ -101,7 +101,7 @@ class Trainer:
         self.variation_progress += self.pad_me('{}. {} {}'.format(self.K.fullmove_number-1,
                                                                   self.move_list[self.vari_i-2],
                                                                   self.move_list[self.vari_i-1]))
-        self.update_progress(self.variation_progress)
+        self.update_progress()
 
 
     def update_board_image(self):
@@ -150,8 +150,9 @@ class Trainer:
         self.vari_i = 0
         self.update_board_image()
         self.variation_progress = '\n'
-        self.update_progress(self.variation_progress)
-        self.update_variation_name(self.variation_name)
+        self.update_progress()
+        self.variation_name = "\n"
+        self.update_variation_name()
         self.update_warning('\n')
 
 
@@ -184,14 +185,14 @@ class Trainer:
         self.label3.text = self.warning
 
 
-    def update_progress(self, new_progress):
-        self.label2.configure(text=new_progress)
-        self.label2.text = new_progress
+    def update_progress(self):
+        self.label2.configure(text=self.variation_progress)
+        self.label2.text = self.variation_progress
 
 
-    def update_variation_name(self, variation_name):
-        self.label4.configure(text=variation_name)
-        self.label4.text = variation_name
+    def update_variation_name(self):
+        self.label4.configure(text=self.variation_name)
+        self.label4.text = self.variation_name
 
 
     def uci_move_from_string(self, start_square_string, end_square_string):
@@ -277,7 +278,7 @@ class Trainer:
 
     def start(self):
         self.prepare_training_variation()
-        self.update_variation_name(self.variation_name)
+        self.update_variation_name()
         self.root.mainloop()
 
 
