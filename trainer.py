@@ -261,7 +261,7 @@ class Trainer:
         else:
             self.have_clicked = True
             self.start_square = self.solve_square(event.x, event.y)
-            self.highlight_board_image(self.start_square)
+            self.update_board_image(square_string=self.start_square)
 
 
     def rank_coord(self, y):
