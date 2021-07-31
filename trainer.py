@@ -231,10 +231,21 @@ class Trainer:
             self.end_square = self.solve_square(event.x, event.y)
             uci_move = self.uci_move_from_string(self.start_square, self.end_square)
             legals = list(self.K.legal_moves)
+            # Case: start_square is specified. end_square choice corresponds to
+            #       an invalid move. echo the warning and clear the board of any highlights.
             if (uci_move not in legals):
                 self.update_warning('Not a legal move!')
+                self.update_board_image()
+
+            # Case: start_square is specified. end_square choice corresponds to
+            #       a legal move, but not the correct move. echo a hint and clear
+            #       the board of any highlights.
             elif (uci_move != self.which_move_in_variation):
                 self.update_warning('Incorrect! Hint: {}'.format(self.K.san(self.which_move_in_variation)))
+                self.update_board_image()
+
+            # Case: start_square is specified. end_square choice corresponds to a legal move:
+            #       the correct move.
             else:
                 self.update_warning('Correct!', '#00ff00')
                 self.K.push(uci_move)
@@ -243,9 +254,6 @@ class Trainer:
         else:
             self.have_clicked = True
             self.start_square = self.solve_square(event.x, event.y)
-            #print("debug: self.start_square: {}".format(self.start_square))
-            #print("debug: type(chess.SQUARES): {}".format(type(chess.SQUARES)))
-            #print("debug: list(chess.SQUARES): {}".format(list(chess.SQUARES)))
             self.highlight_board_image(self.start_square)
 
 
