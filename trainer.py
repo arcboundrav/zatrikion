@@ -124,40 +124,32 @@ class Trainer:
         self.update_progress()
 
 
-    def update_board_image(self):
-        self.save_board_image(self.K)
-        self.board_to_show = self.prepare_image('new_board')
-        self.label.configure(image=self.board_to_show)
-        self.label.image = self.board_to_show
-
-
-    def highlight_board_image(self, square_string):
-        self.highlight_save_board_image(self.K, square_string)
-        self.board_to_show = self.prepare_image("new_board")
-        self.label.configure(image=self.board_to_show)
-        self.label.image = self.board_to_show
-
-
     def save_new_base_board_image(self, event):
+        '''\
+            Create the correct initial position image.
+        '''
         board_image = chess.svg.board(board=self.K,
                                       coordinates=False,
                                       size=640)
         svg2png(board_image, write_to=("init_board.png"))
 
 
-    def highlight_save_board_image(self, board_obj, square_string):
-        board_image = chess.svg.board(board=board_obj,
-                                      squares=self.square_set_wrapper(square_string),
-                                      square_flag="I",
-                                      coordinates=False,
-                                      size=640)
-        svg2png(board_image, write_to=("new_board.png"))
+    def update_board_image(self, square_string=None):
+        self.save_board_image(self.K, square_string)
+        self.board_to_show = self.prepare_image('new_board')
+        self.label.configure(image=self.board_to_show)
+        self.label.image = self.board_to_show
 
 
-    def save_board_image(self, board_obj):
-        board_image = chess.svg.board(board=board_obj,
-                                      coordinates=False,
-                                      size=640)
+    def save_board_image(self, board_obj, square_string=None):
+        if (square_string is None):
+            board_image = chess.svg.board(board=board_obj, coordinates=False, size=640)
+        else:
+            board_image = chess.svg.board(board=board_obj,
+                                          squares=self.square_set_wrapper(square_string),
+                                          square_flag="I",
+                                          coordinates=False,
+                                          size=640)
         svg2png(board_image, write_to=("new_board.png"))
 
 
