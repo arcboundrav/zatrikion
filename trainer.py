@@ -74,6 +74,11 @@ class Trainer:
         self.root.bind("<Escape>", self.end_it)
 
 
+    def square_set_wrapper(self, square_string):
+        square_string_index = chess.SQUARE_NAMES.index(square_string)
+        return chess.SquareSet.from_square(chess.SQUARES[square_string_index])
+
+
     def pad_me(self, string, ref=15):
         pad_n = ref - len(string)
         pad = ' ' * pad_n
@@ -110,13 +115,34 @@ class Trainer:
         self.label.configure(image=self.board_to_show)
         self.label.image = self.board_to_show
 
+
+    def highlight_board_image(self, square_string):
+        self.highlight_save_board_image(self.K, square_string)
+        self.board_to_show = self.prepare_image("new_board")
+        self.label.configure(image=self.board_to_show)
+        self.label.image = self.board_to_show
+
+
     def save_new_base_board_image(self, event):
-        board_image = chess.svg.board(board=K, coordinates=False, size=640)
+        board_image = chess.svg.board(board=self.K,
+                                      coordinates=False,
+                                      size=640)
         svg2png(board_image, write_to=("init_board.png"))
 
 
+    def highlight_save_board_image(self, board_obj, square_string):
+        board_image = chess.svg.board(board=board_obj,
+                                      squares=self.square_set_wrapper(square_string),
+                                      square_flag="I",
+                                      coordinates=False,
+                                      size=640)
+        svg2png(board_image, write_to=("new_board.png"))
+
+
     def save_board_image(self, board_obj):
-        board_image = chess.svg.board(board=board_obj, coordinates=False, size=640)
+        board_image = chess.svg.board(board=board_obj,
+                                      coordinates=False,
+                                      size=640)
         svg2png(board_image, write_to=("new_board.png"))
 
 
@@ -217,6 +243,10 @@ class Trainer:
         else:
             self.have_clicked = True
             self.start_square = self.solve_square(event.x, event.y)
+            #print("debug: self.start_square: {}".format(self.start_square))
+            #print("debug: type(chess.SQUARES): {}".format(type(chess.SQUARES)))
+            #print("debug: list(chess.SQUARES): {}".format(list(chess.SQUARES)))
+            self.highlight_board_image(self.start_square)
 
 
     def rank_coord(self, y):
