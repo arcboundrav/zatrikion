@@ -22,17 +22,10 @@ class Trainer:
         self.K = chess.Board()
         self.V = chess.Board()
 
-        self.root = tk.Tk()
-        self.root.title("Zatrikion")
-        self.menu = tk.Menu(self.root, tearoff=0)
+        self.root = self.create_root()
+        self.menu = self.create_menu()
         self.root.configure(menu=self.menu)
-        self.sub_menu = tk.Menu(self.menu, tearoff=0)
-        self.menu.add_cascade(label="Options", menu=self.sub_menu)
-        self.sub_menu.add_separator()
-        self.sub_menu.add_command(label='Refresh Current Variation', command=self.refresh)
-        self.sub_menu.add_command(label='Load Variation', command=self.open_file)
-        self.sub_menu.add_separator()
-        self.sub_menu.add_command(label='Exit Training Module', command=self.end_it)
+
 
         self.base = tk.Frame(self.root, bg='#393e39')
         self.base.pack()
@@ -67,6 +60,28 @@ class Trainer:
                                font=('Cambria', 12), justify=tk.RIGHT, fg='#ff0000', bg='#000000')
         self.label3.grid(row=2, sticky=[tk.S])
 
+        self.assign_root_bindings()
+
+
+    def create_root(self):
+        root = tk.Tk()
+        root.title("Zatrikion")
+        return root
+
+
+    def create_menu(self):
+        menu = tk.Menu(self.root, tearoff=0)
+        sub_menu = tk.Menu(menu, tearoff=0)
+        menu.add_cascade(label="Options", menu=sub_menu)
+        sub_menu.add_separator()
+        sub_menu.add_command(label='Refresh Current Variation', command=self.refresh)
+        sub_menu.add_command(label='Load Variation', command=self.open_file)
+        sub_menu.add_separator()
+        sub_menu.add_command(label='Exit Training Module', command=self.end_it)
+        return menu
+
+
+    def assign_root_bindings(self):
         self.root.focus_set()
         self.root.bind("a", self.toggle_fullscreen)
         self.root.bind("<Button-1>", self.where_am_i)
@@ -299,10 +314,6 @@ class Trainer:
         x_str = self.file_coord(x)
         y_str = self.rank_coord(y)
         return x_str + y_str
-
-
-    def f(self, event):
-        print(event.x, event.y)
 
 
     def toggle_fullscreen(self, event):
