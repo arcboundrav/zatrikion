@@ -15,7 +15,7 @@ class Trainer:
         self.move_stack = list([])
         self.variation_name = ""
         self.is_full_screen = False
-        self.vari_i = 0
+        self.variation_idx = 0
         self.variation_progress = ""
         self.have_clicked = False
         self.start_square = ""
@@ -140,8 +140,8 @@ class Trainer:
 
     def update_variation_progress(self):
         self.variation_progress += self.pad_me('{}. {} {}'.format(self.K.fullmove_number-1,
-                                                                  self.move_list[self.vari_i-2],
-                                                                  self.move_list[self.vari_i-1]))
+                                                                  self.move_list[self.variation_idx-2],
+                                                                  self.move_list[self.variation_idx-1]))
         self.update_progress()
 
 
@@ -180,19 +180,19 @@ class Trainer:
 
     @property
     def which_move_in_variation(self):
-        return self.move_stack[self.vari_i]
+        return self.move_stack[self.variation_idx]
 
 
     def update_training_progress(self):
-        self.vari_i += 1
-        if (self.vari_i == len(self.move_stack)):
+        self.variation_idx += 1
+        if (self.variation_idx == len(self.move_stack)):
             self.update_warning('Variation completed!', '#00ff00')
         else:
-            self.K.push(self.move_stack[self.vari_i])
+            self.K.push(self.move_stack[self.variation_idx])
             self.update_board_image()
-            self.vari_i += 1
+            self.variation_idx += 1
             self.update_variation_progress()
-            if (self.vari_i == len(self.move_stack)):
+            if (self.variation_idx == len(self.move_stack)):
                 self.update_warning('Variation completed!', '#00ff00')
 
 
@@ -201,7 +201,7 @@ class Trainer:
         self.end_square = ''
         self.have_clicked = False
         self.K.reset()
-        self.vari_i = 0
+        self.variation_idx = 0
         self.update_board_image()
         self.variation_progress = '\n'
         self.update_progress()
