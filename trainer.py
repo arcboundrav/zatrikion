@@ -10,6 +10,7 @@ from tkinter import filedialog
 
 class Trainer:
     def __init__(self):
+        self.constants = {"BOARD_CLICK_CONSTANT":".!frame.!frame.!label"}
         self.move_list = list([])
         self.move_stack = list([])
         self.variation_name = ""
@@ -103,7 +104,7 @@ class Trainer:
     def assign_root_bindings(self):
         self.root.focus_set()
         self.root.bind("a", self.toggle_fullscreen)
-        self.root.bind("<Button-1>", self.where_am_i)
+        self.root.bind("<Button-1>", self.react_to_click)
         self.root.bind("<Return>", self.refresh)
         self.root.bind("<Escape>", self.end_it)
 
@@ -224,7 +225,6 @@ class Trainer:
 
     def open_file(self):
         filename = filedialog.askopenfilename(initialdir='./pkl/training', title='Select training variation')
-        #print("DEBUG | filename <{}>: {} [{}]".format(type(filename), filename, len(filename)))
         # Case: Didn't select the 'Cancel' option in the filedialog.
         if ((type(filename) == str) and (filename != "")):
             filename = self.parse_fn(filename)
@@ -254,41 +254,38 @@ class Trainer:
         return chess.Move.from_uci(start_square_string + end_square_string)
 
 
-    def where_am_i(self, event):
-        #print("DEBUG | event.x: {} event.y: {}".format(event.x, event.y))
-        print("DEBUG | {}".format(event.__dict__['widget'].__dict__['_w']))
-        # NOTE #
-        # event.__dict__['widget'].__dict__['_w'] == '.!frame.!frame.!label'
-        # only when a click occurs on the board.
-        if self.have_clicked:
-            self.have_clicked = False
-            self.end_square = self.solve_square(event.x, event.y)
-            uci_move = self.uci_move_from_string(self.start_square, self.end_square)
-            legals = list(self.K.legal_moves)
-            # Case: start_square is specified. end_square choice corresponds to
-            #       an invalid move. echo the warning and clear the board of any highlights.
-            if (uci_move not in legals):
-                self.update_warning('Not a legal move!')
-                self.update_board_image()
+    def react_to_click(self, event):
+        # Case # Click occurred over the subset of the GUI containing the board.
+        if (event.widget._w == self.constants['BOARD_CLICK_CONSTANT']):
+            if self.have_clicked:
+                self.have_clicked = False
+                self.end_square = self.solve_square(event.x, event.y)
+                uci_move = self.uci_move_from_string(self.start_square, self.end_square)
+                legals = list(self.K.legal_moves)
+                # Case: start_square is specified. end_square choice corresponds to
+                #       an invalid move. echo the warning and clear the board of any highlights.
+                if (uci_move not in legals):
+                    self.update_warning('Not a legal move!')
+                    self.update_board_image()
 
-            # Case: start_square is specified. end_square choice corresponds to
-            #       a legal move, but not the correct move. echo a hint and clear
-            #       the board of any highlights.
-            elif (uci_move != self.which_move_in_variation):
-                self.update_warning('Incorrect! Hint: {}'.format(self.K.san(self.which_move_in_variation)))
-                self.update_board_image()
+                # Case: start_square is specified. end_square choice corresponds to
+                #       a legal move, but not the correct move. echo a hint and clear
+                #       the board of any highlights.
+                elif (uci_move != self.which_move_in_variation):
+                    self.update_warning('Incorrect! Hint: {}'.format(self.K.san(self.which_move_in_variation)))
+                    self.update_board_image()
 
-            # Case: start_square is specified. end_square choice corresponds to a legal move:
-            #       the correct move.
+                # Case: start_square is specified. end_square choice corresponds to a legal move:
+                #       the correct move.
+                else:
+                    self.update_warning('Correct!', '#00ff00')
+                    self.K.push(uci_move)
+                    self.update_board_image()
+                    self.update_training_progress()
             else:
-                self.update_warning('Correct!', '#00ff00')
-                self.K.push(uci_move)
-                self.update_board_image()
-                self.update_training_progress()
-        else:
-            self.have_clicked = True
-            self.start_square = self.solve_square(event.x, event.y)
-            self.update_board_image(square_string=self.start_square)
+                self.have_clicked = True
+                self.start_square = self.solve_square(event.x, event.y)
+                self.update_board_image(square_string=self.start_square)
 
 
     def rank_coord(self, y):
