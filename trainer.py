@@ -132,7 +132,6 @@ class Trainer:
         self.move_list = training_variation['ML']
         self.variation_name = training_variation['name']
         self.update_variation_name()
-        #print("debug | variation_name: {}".format(training_variation['name']))
         for move in self.move_list:
             self.V.push(self.V.parse_san(move))
         self.move_stack = list(self.V.move_stack)
@@ -225,10 +224,13 @@ class Trainer:
 
     def open_file(self):
         filename = filedialog.askopenfilename(initialdir='./pkl/training', title='Select training variation')
-        filename = self.parse_fn(filename)
-        self.V.reset()
-        self.prepare_training_variation(filename)
-        self.refresh()
+        #print("DEBUG | filename <{}>: {} [{}]".format(type(filename), filename, len(filename)))
+        # Case: Didn't select the 'Cancel' option in the filedialog.
+        if ((type(filename) == str) and (filename != "")):
+            filename = self.parse_fn(filename)
+            self.V.reset()
+            self.prepare_training_variation(filename)
+            self.refresh()
 
 
     def update_warning(self, new_warning, color='#ff0000'):
@@ -253,6 +255,11 @@ class Trainer:
 
 
     def where_am_i(self, event):
+        #print("DEBUG | event.x: {} event.y: {}".format(event.x, event.y))
+        print("DEBUG | {}".format(event.__dict__['widget'].__dict__['_w']))
+        # NOTE #
+        # event.__dict__['widget'].__dict__['_w'] == '.!frame.!frame.!label'
+        # only when a click occurs on the board.
         if self.have_clicked:
             self.have_clicked = False
             self.end_square = self.solve_square(event.x, event.y)
