@@ -30,6 +30,7 @@ class Trainer:
         self.base = tk.Frame(self.root, bg='#393e39')
         self.base.pack()
 
+        self.save_new_base_board_image()
         self.board_to_show = self.prepare_image('init_board')
 
         self.board_frame = tk.Frame(self.base)
@@ -81,6 +82,12 @@ class Trainer:
         return menu
 
 
+    def create_board_frame(self):
+        frame = tk.Frame()
+        frame.grid(row=0, column=0, sticky=tk.W)
+        return frame
+
+
     def assign_root_bindings(self):
         self.root.focus_set()
         self.root.bind("a", self.toggle_fullscreen)
@@ -124,7 +131,7 @@ class Trainer:
         self.update_progress()
 
 
-    def save_new_base_board_image(self, event):
+    def save_new_base_board_image(self):
         '''\
             Create the correct initial position image.
         '''
