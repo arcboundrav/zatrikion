@@ -4,8 +4,10 @@ from PIL import Image, ImageTk
 from cairosvg import svg2png
 import chess
 import chess.svg
+import chess.pgn
 from util import to_pkl, from_pkl
 from tkinter import filedialog
+from pgn2vari import PGN_IN
 
 
 class Trainer:
@@ -72,6 +74,8 @@ class Trainer:
         sub_menu.add_command(label='Refresh Current Variation', command=self.refresh)
         sub_menu.add_command(label='Load Variation', command=self.open_file)
         sub_menu.add_separator()
+        sub_menu.add_command(label='Load PGN', command=self.open_pgn_file)
+        sub_menu.add_separator()
         sub_menu.add_command(label='Exit Training Module', command=self.end_it)
         return menu
 
@@ -127,6 +131,9 @@ class Trainer:
     def save_variation(self, variation_to_save, fn, fp="./pkl/training/"):
         to_pkl(variation_to_save, fn, fp)
 
+
+    def prepare_training_variation_from_pgn(self, fn):
+        pass
 
     def prepare_training_variation(self, fn="default_training_variation"):
         training_variation = self.load_variation(fn)
@@ -241,6 +248,24 @@ class Trainer:
         rev_fn_particle = rev_fn[2:rev_fn_slash_i]
         true_fn = rev_fn_particle[::-1]
         return true_fn
+
+
+    def open_pgn_file(self):
+        filename = filedialog.askopenfilename(initialdir='./PGN/', title='Select PGN training variation')
+        # Case: Didn't select the 'Cancel' option in the filedialog.
+        if ((type(filename) == str) and (filename != "")):
+            full_filename = self.parse_fn(filename) + "gn"
+            filename = full_filename[:-4]
+            pgn = open("./PGN/"+full_filename)
+            pgn_game = chess.pgn.read_game(pgn)
+            pgn_mainline = list(pgn_game.main_line())
+            pgn_board = pgn_game.board()
+            variation = []
+            for move in pgn_mainline:
+                variation.append(pgn_board.san(move))
+            variation = {'ML':variation, 'name':filename}
+            self.save_variation(variation, filename)
+
 
 
     def open_file(self):
