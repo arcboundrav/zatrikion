@@ -138,14 +138,14 @@ class Trainer:
         self.move_stack = list(self.V.move_stack)
 
 
-    def update_variation_progress(self):
+    def old_update_variation_progress(self):
         self.variation_progress += self.pad_me('{}. {} {}'.format(self.K.fullmove_number-1,
                                                                   self.move_list[self.variation_idx-2],
                                                                   self.move_list[self.variation_idx-1]))
         self.update_progress()
 
 
-    def new_update_variation_progress(self):
+    def update_variation_progress(self):
         move_string = self.move_list[self.variation_idx-1]
         if (((self.variation_idx - 1) % 2) == 0):
             self.variation_progress += "{}. {} ".format(self.K.fullmove_number, move_string)
@@ -201,7 +201,7 @@ class Trainer:
         #if (self.variation_idx == len(self.move_stack)):
         if self.variation_is_complete:
             self.update_warning('Variation completed!', '#00ff00')
-        self.new_update_variation_progress()
+        self.update_variation_progress()
         #else:
         #    self.new_update_variation_progress()
         # NOTE #
