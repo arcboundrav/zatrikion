@@ -145,6 +145,15 @@ class Trainer:
         self.update_progress()
 
 
+    def new_update_variation_progress(self):
+        move_string = self.move_list[self.variation_idx-1]
+        if (((self.variation_idx - 1) % 2) == 0):
+            self.variation_progress += "{}. {} ".format(self.K.fullmove_number, move_string)
+        else:
+            self.variation_progress += "{}\n".format(move_string)
+        self.update_progress()
+
+
     def save_new_base_board_image(self):
         '''\
             Create the correct initial position image.
@@ -182,18 +191,29 @@ class Trainer:
     def which_move_in_variation(self):
         return self.move_stack[self.variation_idx]
 
+    @property
+    def variation_is_complete(self):
+        return self.variation_idx == len(self.move_stack)
+
 
     def update_training_progress(self):
         self.variation_idx += 1
-        if (self.variation_idx == len(self.move_stack)):
+        #if (self.variation_idx == len(self.move_stack)):
+        if self.variation_is_complete:
             self.update_warning('Variation completed!', '#00ff00')
-        else:
-            self.K.push(self.move_stack[self.variation_idx])
-            self.update_board_image()
-            self.variation_idx += 1
-            self.update_variation_progress()
-            if (self.variation_idx == len(self.move_stack)):
-                self.update_warning('Variation completed!', '#00ff00')
+        self.new_update_variation_progress()
+        #else:
+        #    self.new_update_variation_progress()
+        # NOTE #
+        # The following commented out code automatically causes black's move to be
+        # played.
+        #else:
+        #    self.K.push(self.move_stack[self.variation_idx])
+        #    self.update_board_image()
+        #    self.variation_idx += 1
+        #    self.update_variation_progress()
+        #    if (self.variation_idx == len(self.move_stack)):
+        #        self.update_warning('Variation completed!', '#00ff00')
 
 
     def refresh(self, event='<Return>'):
@@ -255,37 +275,39 @@ class Trainer:
 
 
     def react_to_click(self, event):
-        # Case # Click occurred over the subset of the GUI containing the board.
-        if (event.widget._w == self.constants['BOARD_CLICK_CONSTANT']):
-            if self.have_clicked:
-                self.have_clicked = False
-                self.end_square = self.solve_square(event.x, event.y)
-                uci_move = self.uci_move_from_string(self.start_square, self.end_square)
-                legals = list(self.K.legal_moves)
-                # Case: start_square is specified. end_square choice corresponds to
-                #       an invalid move. echo the warning and clear the board of any highlights.
-                if (uci_move not in legals):
-                    self.update_warning('Not a legal move!')
-                    self.update_board_image()
+        # Case # Variation isn't complete yet.
+        if not(self.variation_is_complete):
+            # Case # Click occurred over the subset of the GUI containing the board.
+            if (event.widget._w == self.constants['BOARD_CLICK_CONSTANT']):
+                if self.have_clicked:
+                    self.have_clicked = False
+                    self.end_square = self.solve_square(event.x, event.y)
+                    uci_move = self.uci_move_from_string(self.start_square, self.end_square)
+                    legals = list(self.K.legal_moves)
+                    # Case: start_square is specified. end_square choice corresponds to
+                    #       an invalid move. echo the warning and clear the board of any highlights.
+                    if (uci_move not in legals):
+                        self.update_warning('Not a legal move!')
+                        self.update_board_image()
 
-                # Case: start_square is specified. end_square choice corresponds to
-                #       a legal move, but not the correct move. echo a hint and clear
-                #       the board of any highlights.
-                elif (uci_move != self.which_move_in_variation):
-                    self.update_warning('Incorrect! Hint: {}'.format(self.K.san(self.which_move_in_variation)))
-                    self.update_board_image()
+                    # Case: start_square is specified. end_square choice corresponds to
+                    #       a legal move, but not the correct move. echo a hint and clear
+                    #       the board of any highlights.
+                    elif (uci_move != self.which_move_in_variation):
+                        self.update_warning('Incorrect! Hint: {}'.format(self.K.san(self.which_move_in_variation)))
+                        self.update_board_image()
 
-                # Case: start_square is specified. end_square choice corresponds to a legal move:
-                #       the correct move.
+                    # Case: start_square is specified. end_square choice corresponds to a legal move:
+                    #       the correct move.
+                    else:
+                        self.update_warning('Correct!', '#00ff00')
+                        self.K.push(uci_move)
+                        self.update_board_image()
+                        self.update_training_progress()
                 else:
-                    self.update_warning('Correct!', '#00ff00')
-                    self.K.push(uci_move)
-                    self.update_board_image()
-                    self.update_training_progress()
-            else:
-                self.have_clicked = True
-                self.start_square = self.solve_square(event.x, event.y)
-                self.update_board_image(square_string=self.start_square)
+                    self.have_clicked = True
+                    self.start_square = self.solve_square(event.x, event.y)
+                    self.update_board_image(square_string=self.start_square)
 
 
     def rank_coord(self, y):
@@ -349,3 +371,5 @@ class Trainer:
 
 TRAINER = Trainer()
 TRAINER.start()
+
+#x = TRAINER.load_variation("default_training_variation")
