@@ -26,18 +26,13 @@ class Trainer:
         self.menu = self.create_menu()
         self.root.configure(menu=self.menu)
 
-
-        self.base = tk.Frame(self.root, bg='#393e39')
-        self.base.pack()
+        self.base = self.create_base()
 
         self.save_new_base_board_image()
         self.board_to_show = self.prepare_image('init_board')
 
-        self.board_frame = tk.Frame(self.base)
-        self.data_frame = tk.Frame(self.base, bg='#000000', width=100)
-
-        self.board_frame.grid(row=0, column=0, sticky=tk.W)
-        self.data_frame.grid(row=0, column=1, sticky=[tk.W, tk.N])
+        self.board_frame = self.create_board_frame()
+        self.data_frame = self.create_data_frame()
 
         self.label = tk.Label(self.board_frame,
                               image=self.board_to_show, bg='#ffffff', border=2, relief=tk.SUNKEN)
@@ -82,9 +77,21 @@ class Trainer:
         return menu
 
 
+    def create_base(self):
+        base = tk.Frame(self.root, bg='#393e39')
+        base.pack()
+        return base
+
+
     def create_board_frame(self):
-        frame = tk.Frame()
+        frame = tk.Frame(self.base)
         frame.grid(row=0, column=0, sticky=tk.W)
+        return frame
+
+
+    def create_data_frame(self):
+        frame = tk.Frame(self.base, bg='#000000', width=100)
+        frame.grid(row=0, column=1, sticky=[tk.W, tk.N])
         return frame
 
 
