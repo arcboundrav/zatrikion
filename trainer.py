@@ -132,14 +132,12 @@ class Trainer:
         to_pkl(variation_to_save, fn, fp)
 
 
-    def prepare_training_variation_from_pgn(self, fn):
-        pass
-
     def prepare_training_variation(self, fn="default_training_variation"):
         training_variation = self.load_variation(fn)
         self.move_list = training_variation['ML']
         self.variation_name = training_variation['name']
         self.update_variation_name()
+        self.V.reset()
         for move in self.move_list:
             self.V.push(self.V.parse_san(move))
         self.move_stack = list(self.V.move_stack)
@@ -256,15 +254,18 @@ class Trainer:
         if ((type(filename) == str) and (filename != "")):
             full_filename = self.parse_fn(filename) + "gn"
             filename = full_filename[:-4]
-            pgn = open("./PGN/"+full_filename)
-            pgn_game = chess.pgn.read_game(pgn)
-            pgn_mainline = list(pgn_game.main_line())
-            pgn_board = pgn_game.board()
-            variation = []
-            for move in pgn_mainline:
-                variation.append(pgn_board.san(move))
-            variation = {'ML':variation, 'name':filename}
-            self.save_variation(variation, filename)
+            try:
+                pgn = open("./PGN/"+full_filename)
+                pgn_game = chess.pgn.read_game(pgn)
+                pgn_mainline = list(pgn_game.main_line())
+                pgn_board = pgn_game.board()
+                variation = []
+                for move in pgn_mainline:
+                    variation.append(pgn_board.san(move))
+                pgn.close()
+                variation = {'ML':variation, 'name':filename}
+                self.save_variation(variation, filename)
+                self.prepare_training_variation(filename)
 
 
 
