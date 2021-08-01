@@ -34,9 +34,7 @@ class Trainer:
         self.board_frame = self.create_board_frame()
         self.data_frame = self.create_data_frame()
 
-        self.label = tk.Label(self.board_frame,
-                              image=self.board_to_show, bg='#ffffff', border=2, relief=tk.SUNKEN)
-        self.label.grid(row=0)
+        self.board_label = self.create_board_label()
 
         self.variation_name = '\n'
         self.label4 = tk.Label(self.data_frame,
@@ -95,6 +93,13 @@ class Trainer:
         return frame
 
 
+    def create_board_label(self):
+        label = tk.Label(self.board_frame,
+                         image=self.board_to_show, bg='#ffffff', border=2, relief=tk.SUNKEN)
+        label.grid(row=0)
+        return label
+
+
     def assign_root_bindings(self):
         self.root.focus_set()
         self.root.bind("a", self.toggle_fullscreen)
@@ -126,6 +131,8 @@ class Trainer:
         training_variation = self.load_variation(fn)
         self.move_list = training_variation['ML']
         self.variation_name = training_variation['name']
+        self.update_variation_name()
+        #print("debug | variation_name: {}".format(training_variation['name']))
         for move in self.move_list:
             self.V.push(self.V.parse_san(move))
         self.move_stack = list(self.V.move_stack)
@@ -151,8 +158,8 @@ class Trainer:
     def update_board_image(self, square_string=None):
         self.save_board_image(self.K, square_string)
         self.board_to_show = self.prepare_image('new_board')
-        self.label.configure(image=self.board_to_show)
-        self.label.image = self.board_to_show
+        self.board_label.configure(image=self.board_to_show)
+        self.board_label.image = self.board_to_show
 
 
     def save_board_image(self, board_obj, square_string=None):
@@ -198,7 +205,6 @@ class Trainer:
         self.update_board_image()
         self.variation_progress = '\n'
         self.update_progress()
-        self.variation_name = "\n"
         self.update_variation_name()
         self.update_warning('\n')
 
