@@ -260,7 +260,7 @@ class Trainer:
             reversed_filename_slash_index = reversed_filename.index('/')
             reversed_filename_particle = reversed_filename[:reversed_filename_slash_index]
             filename = reversed_filename_particle[::-1]
-        return remove_extension(full_filename, ".pgn")
+        return self.remove_extension(filename, ".pgn")
 
 
     def load_pgn(self, filename):
