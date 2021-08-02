@@ -287,6 +287,7 @@ class Trainer:
             # Case: load_pgn succeeded in loading and converting the PGN into the variation format.
             if (variation is not None):
                 self.prepare_pgn_training_variation(variation)
+                self.refresh()
 
 
     def open_file(self):
