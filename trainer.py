@@ -239,14 +239,6 @@ class Trainer:
         self.root.destroy()
 
 
-    def parse_fn(self, fn):
-        rev_fn = fn[::-1]
-        rev_fn_slash_i = rev_fn.index('/')
-        rev_fn_particle = rev_fn[2:rev_fn_slash_i]
-        true_fn = rev_fn_particle[::-1]
-        return true_fn
-
-
     def remove_extension(self, filename, extension):
         if filename.endswith(extension):
             n_chars_to_remove = len(extension)
@@ -254,13 +246,21 @@ class Trainer:
         return filename
 
 
-    def solve_pgn_filename(self, filename):
+    def solve_filename(self, filename):
         if ("/" in filename):
             reversed_filename = filename[::-1]
             reversed_filename_slash_index = reversed_filename.index('/')
             reversed_filename_particle = reversed_filename[:reversed_filename_slash_index]
             filename = reversed_filename_particle[::-1]
-        return self.remove_extension(filename, ".pgn")
+        return filename
+
+
+    def solve_pgn_filename(self, filename):
+        return self.remove_extension(self.solve_filename(filename), ".pgn")
+
+
+    def solve_pickle_filename(self, filename):
+        return self.remove_extension(self.solve_filename(filename), ".p")
 
 
     def load_pgn(self, filename):
@@ -294,7 +294,7 @@ class Trainer:
         filename = filedialog.askopenfilename(initialdir='./pkl/training', title='Select training variation')
         # Case: Didn't select the 'Cancel' option in the filedialog.
         if ((type(filename) == str) and (filename != "")):
-            filename = self.parse_fn(filename)
+            filename = self.solve_pickle_filename(filename)
             self.prepare_training_variation(filename)
             self.refresh()
 
