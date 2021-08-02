@@ -1,5 +1,6 @@
 import tkinter as tk
 import sys
+import os
 from PIL import Image, ImageTk
 from cairosvg import svg2png
 import chess
@@ -7,7 +8,8 @@ import chess.svg
 import chess.pgn
 from util import to_pkl, from_pkl
 from tkinter import filedialog
-from pgn2vari import PGN_IN
+
+
 
 
 class Trainer:
@@ -132,6 +134,16 @@ class Trainer:
         to_pkl(variation_to_save, fn, fp)
 
 
+    def prepare_pgn_training_variation(self, training_variation):
+        self.move_list = training_variation['ML']
+        self.variation_name = training_variation['name']
+        self.update_variation_name()
+        self.V.reset()
+        for move in self.move_list:
+            self.V.push(self.V.parse_san(move))
+        self.move_stack = list(self.V.move_stack)
+
+
     def prepare_training_variation(self, fn="default_training_variation"):
         training_variation = self.load_variation(fn)
         self.move_list = training_variation['ML']
@@ -203,22 +215,9 @@ class Trainer:
 
     def update_training_progress(self):
         self.variation_idx += 1
-        #if (self.variation_idx == len(self.move_stack)):
         if self.variation_is_complete:
             self.update_warning('Variation completed!', '#00ff00')
         self.update_variation_progress()
-        #else:
-        #    self.new_update_variation_progress()
-        # NOTE #
-        # The following commented out code automatically causes black's move to be
-        # played.
-        #else:
-        #    self.K.push(self.move_stack[self.variation_idx])
-        #    self.update_board_image()
-        #    self.variation_idx += 1
-        #    self.update_variation_progress()
-        #    if (self.variation_idx == len(self.move_stack)):
-        #        self.update_warning('Variation completed!', '#00ff00')
 
 
     def refresh(self, event='<Return>'):
@@ -248,25 +247,30 @@ class Trainer:
         return true_fn
 
 
+    def load_pgn(self, filename):
+        vari_to_save = None
+        with open(filename) as pgn:
+            pgn_game = chess.pgn.read_game(pgn)
+            pgn_board = pgn_game.board()
+            pgn_mainline = list(pgn_game.main_line())
+
+            variation = []
+            for move in pgn_mainline:
+                variation.append(pgn_board.san(move))
+                pgn_board.push(move)
+
+            vari_to_save = {'name':filename, 'ML':variation}
+        return vari_to_save
+
+
     def open_pgn_file(self):
         filename = filedialog.askopenfilename(initialdir='./PGN/', title='Select PGN training variation')
         # Case: Didn't select the 'Cancel' option in the filedialog.
         if ((type(filename) == str) and (filename != "")):
-            full_filename = self.parse_fn(filename) + "gn"
-            filename = full_filename[:-4]
-            try:
-                pgn = open("./PGN/"+full_filename)
-                pgn_game = chess.pgn.read_game(pgn)
-                pgn_mainline = list(pgn_game.main_line())
-                pgn_board = pgn_game.board()
-                variation = []
-                for move in pgn_mainline:
-                    variation.append(pgn_board.san(move))
-                pgn.close()
-                variation = {'ML':variation, 'name':filename}
-                self.save_variation(variation, filename)
-                self.prepare_training_variation(filename)
-
+            variation = self.load_pgn(filename)
+            # Case: load_pgn succeeded in loading and converting the PGN into the variation format.
+            if (variation is not None):
+                self.prepare_pgn_training_variation(variation)
 
 
     def open_file(self):
@@ -274,7 +278,6 @@ class Trainer:
         # Case: Didn't select the 'Cancel' option in the filedialog.
         if ((type(filename) == str) and (filename != "")):
             filename = self.parse_fn(filename)
-            self.V.reset()
             self.prepare_training_variation(filename)
             self.refresh()
 
@@ -305,31 +308,32 @@ class Trainer:
         if not(self.variation_is_complete):
             # Case # Click occurred over the subset of the GUI containing the board.
             if (event.widget._w == self.constants['BOARD_CLICK_CONSTANT']):
+                # Case # start_square is specified.
                 if self.have_clicked:
                     self.have_clicked = False
                     self.end_square = self.solve_square(event.x, event.y)
                     uci_move = self.uci_move_from_string(self.start_square, self.end_square)
                     legals = list(self.K.legal_moves)
-                    # Case: start_square is specified. end_square choice corresponds to
+                    # Case: end_square choice corresponds to is an invalid move.
                     #       an invalid move. echo the warning and clear the board of any highlights.
                     if (uci_move not in legals):
                         self.update_warning('Not a legal move!')
                         self.update_board_image()
 
-                    # Case: start_square is specified. end_square choice corresponds to
-                    #       a legal move, but not the correct move. echo a hint and clear
-                    #       the board of any highlights.
+                    # Case: end_square choice corresponds to a legal move, but not the correct one.
+                    #       echo a hint and clear the board of any highlights.
                     elif (uci_move != self.which_move_in_variation):
                         self.update_warning('Incorrect! Hint: {}'.format(self.K.san(self.which_move_in_variation)))
                         self.update_board_image()
 
-                    # Case: start_square is specified. end_square choice corresponds to a legal move:
-                    #       the correct move.
+                    # Case: end_square choice corresponds to the correct move.
                     else:
                         self.update_warning('Correct!', '#00ff00')
                         self.K.push(uci_move)
                         self.update_board_image()
                         self.update_training_progress()
+
+                # Case # start_square is unspecified.
                 else:
                     self.have_clicked = True
                     self.start_square = self.solve_square(event.x, event.y)
@@ -388,6 +392,9 @@ class Trainer:
             self.is_full_screen = True
             self.root.attributes('-fullscreen', True)
 
+    def verify_preconditions(self):
+        pass
+
 
     def start(self):
         self.prepare_training_variation()
@@ -397,5 +404,3 @@ class Trainer:
 
 TRAINER = Trainer()
 TRAINER.start()
-
-#x = TRAINER.load_variation("default_training_variation")
