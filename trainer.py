@@ -247,6 +247,22 @@ class Trainer:
         return true_fn
 
 
+    def remove_extension(self, filename, extension):
+        if filename.endswith(extension):
+            n_chars_to_remove = len(extension)
+            filename = filename[:-n_chars_to_remove]
+        return filename
+
+
+    def solve_pgn_filename(self, filename):
+        if ("/" in filename):
+            reversed_filename = filename[::-1]
+            reversed_filename_slash_index = reversed_filename.index('/')
+            reversed_filename_particle = reversed_filename[:reversed_filename_slash_index]
+            filename = reversed_filename_particle[::-1]
+        return remove_extension(full_filename, ".pgn")
+
+
     def load_pgn(self, filename):
         vari_to_save = None
         with open(filename) as pgn:
@@ -259,7 +275,7 @@ class Trainer:
                 variation.append(pgn_board.san(move))
                 pgn_board.push(move)
 
-            vari_to_save = {'name':filename, 'ML':variation}
+            vari_to_save = {'name':self.solve_pgn_filename(filename), 'ML':variation}
         return vari_to_save
 
 
