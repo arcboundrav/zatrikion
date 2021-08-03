@@ -72,8 +72,8 @@ class Trainer:
         menu = tk.Menu(self.root, tearoff=0)
         sub_menu = tk.Menu(menu, tearoff=0)
         menu.add_cascade(label="Options", menu=sub_menu)
-        sub_menu.add_separator()
         sub_menu.add_command(label='Refresh Current Variation', command=self.refresh)
+        sub_menu.add_separator()
         sub_menu.add_command(label='Load Variation', command=self.open_file)
         sub_menu.add_separator()
         sub_menu.add_command(label='Load PGN', command=self.open_pgn_file)
@@ -120,12 +120,6 @@ class Trainer:
         return chess.SquareSet.from_square(chess.SQUARES[square_string_index])
 
 
-    def pad_me(self, string, ref=15):
-        pad_n = ref - len(string)
-        pad = ' ' * pad_n
-        return "".join([string, pad, '\n'])
-
-
     def load_variation(self, fn, fp="./pkl/training/"):
         return from_pkl(fn, fp)
 
@@ -153,13 +147,6 @@ class Trainer:
         for move in self.move_list:
             self.V.push(self.V.parse_san(move))
         self.move_stack = list(self.V.move_stack)
-
-
-    def old_update_variation_progress(self):
-        self.variation_progress += self.pad_me('{}. {} {}'.format(self.K.fullmove_number-1,
-                                                                  self.move_list[self.variation_idx-2],
-                                                                  self.move_list[self.variation_idx-1]))
-        self.update_progress()
 
 
     def update_variation_progress(self):
