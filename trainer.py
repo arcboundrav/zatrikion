@@ -247,6 +247,8 @@ class Trainer:
 
 
     def solve_filename(self, filename):
+        # NOTE #
+        # This approach will fail if filenames contain forward slashes.
         if ("/" in filename):
             reversed_filename = filename[::-1]
             reversed_filename_slash_index = reversed_filename.index('/')
@@ -280,7 +282,9 @@ class Trainer:
 
 
     def open_pgn_file(self):
-        filename = filedialog.askopenfilename(initialdir='./PGN/', title='Select PGN training variation')
+        filename = filedialog.askopenfilename(initialdir='./PGN/',
+                                              title='Select PGN training variation',
+                                              filetypes=(("PGN Files", "*.pgn"),))
         # Case: Didn't select the 'Cancel' option in the filedialog.
         if ((type(filename) == str) and (filename != "")):
             variation = self.load_pgn(filename)
@@ -291,7 +295,9 @@ class Trainer:
 
 
     def open_file(self):
-        filename = filedialog.askopenfilename(initialdir='./pkl/training', title='Select training variation')
+        filename = filedialog.askopenfilename(initialdir='./pkl/training',
+                                              title='Select training variation',
+                                              filetypes=(("Variation Files", "*.p"),))
         # Case: Didn't select the 'Cancel' option in the filedialog.
         if ((type(filename) == str) and (filename != "")):
             filename = self.solve_pickle_filename(filename)
