@@ -112,6 +112,10 @@ class Trainer:
 
 
     def square_set_wrapper(self, square_string):
+        '''\
+            Convert a string representation of a square on the board into
+            a SquareSet to support board highlighting.
+        '''
         square_string_index = chess.SQUARE_NAMES.index(square_string)
         return chess.SquareSet.from_square(chess.SQUARES[square_string_index])
 
@@ -146,6 +150,9 @@ class Trainer:
 
 
     def update_board_image(self, square_string=None):
+        '''\
+            Create and display an updated representation of the game state.
+        '''
         self.save_board_image(self.K, square_string)
         self.board_to_show = self.prepare_image('new_board')
         self.board_label.configure(image=self.board_to_show)
@@ -153,6 +160,9 @@ class Trainer:
 
 
     def save_board_image(self, board_obj, square_string=None):
+        '''\
+            Create an updated representation of the game state, with or without highlighting.
+        '''
         if (square_string is None):
             board_image = chess.svg.board(board=board_obj, coordinates=False, size=640)
         else:
@@ -226,19 +236,24 @@ class Trainer:
 
 
     def load_pgn(self, filename):
-        vari_to_save = None
-        with open(filename) as pgn:
-            pgn_game = chess.pgn.read_game(pgn)
-            pgn_board = pgn_game.board()
-            pgn_mainline = list(pgn_game.main_line())
+        try:
+            with open(filename) as pgn:
+                pgn_game = chess.pgn.read_game(pgn)
+                pgn_board = pgn_game.board()
+                pgn_mainline = list(pgn_game.main_line())
 
-            variation = []
-            for move in pgn_mainline:
-                variation.append(pgn_board.san(move))
-                pgn_board.push(move)
+                variation_moves = []
+                for move in pgn_mainline:
+                    variation_moves.append(pgn_board.san(move))
+                    pgn_board.push(move)
 
-            vari_to_save = {'name':self.solve_pgn_filename(filename), 'ML':variation}
-        return vari_to_save
+                variation = {'name':self.solve_pgn_filename(filename), 'ML':variation_moves}
+
+        except:
+            variation = None
+
+        finally:
+            return variation
 
 
     def open_pgn_file(self):
@@ -312,7 +327,7 @@ class Trainer:
                     self.update_board_image(square_string=self.start_square)
 
 
-    def rank_coord(self, y):
+    def rank_coordinate(self, y):
         if y > 560:
             return '1'
         elif y > 480:
@@ -331,7 +346,7 @@ class Trainer:
             return '8'
 
 
-    def file_coord(self, x):
+    def file_coordinate(self, x):
         if x > 560:
             return 'h'
         elif x > 480:
@@ -351,9 +366,7 @@ class Trainer:
 
 
     def solve_square(self, x, y):
-        x_str = self.file_coord(x)
-        y_str = self.rank_coord(y)
-        return x_str + y_str
+        return self.file_coordinate(x) + self.rank_coordinate(y)
 
 
     def toggle_fullscreen(self, event):
@@ -366,21 +379,27 @@ class Trainer:
 
 
     def create_default_pgn(self):
-        # Ensure the PGN subdirectory exists.
+        '''\
+            Ensure the correct default PGN exists in the correct subdirectory.
+        '''
         self.create_pgn_subdirectory()
-        # Case # Write the default PGN.
         with open("./PGN/Scholar's Mate.pgn", "w") as default_pgn_file:
             default_pgn_file.write("1. e4 e5 2. Bc4 Bc5 3. Qf3 Nc6 4. Qxf7#")
             default_pgn_file.close()
 
 
     def create_pgn_subdirectory(self):
-        # Case # Doesn't exist.
+        '''\
+            Ensure the PGN subdirectory exists.
+        '''
         if not(os.path.exists("PGN")):
             os.mkdir("PGN")
 
 
     def verify_preconditions(self):
+        '''\
+            Ensure assumptions are made safely.
+        '''
         self.create_default_pgn()
 
 
