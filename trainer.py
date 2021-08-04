@@ -10,8 +10,6 @@ from util import to_pkl, from_pkl
 from tkinter import filedialog
 
 
-
-
 class Trainer:
     def __init__(self):
         self.constants = {"BOARD_CLICK_CONSTANT":".!frame.!frame.!label"}
@@ -128,7 +126,7 @@ class Trainer:
         to_pkl(variation_to_save, fn, fp)
 
 
-    def prepare_pgn_training_variation(self, training_variation):
+    def prepare_training_variation(self, training_variation):
         self.move_list = training_variation['ML']
         self.variation_name = training_variation['name']
         self.update_variation_name()
@@ -138,15 +136,9 @@ class Trainer:
         self.move_stack = list(self.V.move_stack)
 
 
-    def prepare_training_variation(self, fn="default_training_variation"):
+    def prepare_pickled_variation(self, fn="default_training_variation"):
         training_variation = self.load_variation(fn)
-        self.move_list = training_variation['ML']
-        self.variation_name = training_variation['name']
-        self.update_variation_name()
-        self.V.reset()
-        for move in self.move_list:
-            self.V.push(self.V.parse_san(move))
-        self.move_stack = list(self.V.move_stack)
+        self.prepare_training_variation(training_variation)
 
 
     def update_variation_progress(self):
@@ -277,7 +269,7 @@ class Trainer:
             variation = self.load_pgn(filename)
             # Case: load_pgn succeeded in loading and converting the PGN into the variation format.
             if (variation is not None):
-                self.prepare_pgn_training_variation(variation)
+                self.prepare_training_variation(variation)
                 self.refresh()
 
 
@@ -288,7 +280,7 @@ class Trainer:
         # Case: Didn't select the 'Cancel' option in the filedialog.
         if ((type(filename) == str) and (filename != "")):
             filename = self.solve_pickle_filename(filename)
-            self.prepare_training_variation(filename)
+            self.prepare_pickled_variation(filename)
             self.refresh()
 
 
@@ -402,12 +394,40 @@ class Trainer:
             self.is_full_screen = True
             self.root.attributes('-fullscreen', True)
 
+
+    def create_default_pgn(self):
+        # Ensure the PGN subdirectory exists.
+        self.create_pgn_subdirectory()
+        # Case # Write the default PGN.
+        with open("./PGN/Scholar's Mate.pgn", "w") as default_pgn_file:
+            default_pgn_file.write("1. e4 e5 2. Bc4 Bc5 3. Qf3 Nc6 4. Qxf7#")
+            default_pgn_file.close()
+
+
+    def create_pgn_subdirectory(self):
+        # Case # Doesn't exist.
+        if not(os.path.exists("PGN")):
+            os.mkdir("PGN")
+
+
+    def create_pkl_subdirectory(self):
+        # Case # Doesn't exist.
+        if not(os.path.exists("pkl")):
+            os.mkdir("pkl")
+            os.mkdir("pkl/training")
+        # Case # pkl exists, but the training subdirectory doesn't.
+        elif not(os.path.exists("pkl/training")):
+            os.mkdir("pkl/training")
+
+
     def verify_preconditions(self):
-        pass
+        self.create_pkl_subdirectory()
+        self.create_default_pgn()
 
 
     def start(self):
-        self.prepare_training_variation()
+        self.verify_preconditions()
+        self.prepare_training_variation(self.load_pgn("./PGN/Scholar's Mate.pgn"))
         self.update_variation_name()
         self.root.mainloop()
 
