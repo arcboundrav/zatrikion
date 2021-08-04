@@ -72,8 +72,6 @@ class Trainer:
         menu.add_cascade(label="Options", menu=sub_menu)
         sub_menu.add_command(label='Refresh Current Variation', command=self.refresh)
         sub_menu.add_separator()
-        sub_menu.add_command(label='Load Variation', command=self.open_file)
-        sub_menu.add_separator()
         sub_menu.add_command(label='Load PGN', command=self.open_pgn_file)
         sub_menu.add_separator()
         sub_menu.add_command(label='Exit Training Module', command=self.end_it)
@@ -118,14 +116,6 @@ class Trainer:
         return chess.SquareSet.from_square(chess.SQUARES[square_string_index])
 
 
-    def load_variation(self, fn, fp="./pkl/training/"):
-        return from_pkl(fn, fp)
-
-
-    def save_variation(self, variation_to_save, fn, fp="./pkl/training/"):
-        to_pkl(variation_to_save, fn, fp)
-
-
     def prepare_training_variation(self, training_variation):
         self.move_list = training_variation['ML']
         self.variation_name = training_variation['name']
@@ -134,11 +124,6 @@ class Trainer:
         for move in self.move_list:
             self.V.push(self.V.parse_san(move))
         self.move_stack = list(self.V.move_stack)
-
-
-    def prepare_pickled_variation(self, fn="default_training_variation"):
-        training_variation = self.load_variation(fn)
-        self.prepare_training_variation(training_variation)
 
 
     def update_variation_progress(self):
@@ -240,10 +225,6 @@ class Trainer:
         return self.remove_extension(self.solve_filename(filename), ".pgn")
 
 
-    def solve_pickle_filename(self, filename):
-        return self.remove_extension(self.solve_filename(filename), ".p")
-
-
     def load_pgn(self, filename):
         vari_to_save = None
         with open(filename) as pgn:
@@ -271,17 +252,6 @@ class Trainer:
             if (variation is not None):
                 self.prepare_training_variation(variation)
                 self.refresh()
-
-
-    def open_file(self):
-        filename = filedialog.askopenfilename(initialdir='./pkl/training',
-                                              title='Select training variation',
-                                              filetypes=(("Variation Files", "*.p"),))
-        # Case: Didn't select the 'Cancel' option in the filedialog.
-        if ((type(filename) == str) and (filename != "")):
-            filename = self.solve_pickle_filename(filename)
-            self.prepare_pickled_variation(filename)
-            self.refresh()
 
 
     def update_warning(self, new_warning, color='#ff0000'):
@@ -410,18 +380,7 @@ class Trainer:
             os.mkdir("PGN")
 
 
-    def create_pkl_subdirectory(self):
-        # Case # Doesn't exist.
-        if not(os.path.exists("pkl")):
-            os.mkdir("pkl")
-            os.mkdir("pkl/training")
-        # Case # pkl exists, but the training subdirectory doesn't.
-        elif not(os.path.exists("pkl/training")):
-            os.mkdir("pkl/training")
-
-
     def verify_preconditions(self):
-        self.create_pkl_subdirectory()
         self.create_default_pgn()
 
 
