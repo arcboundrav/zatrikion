@@ -70,11 +70,13 @@ class Trainer:
         menu = tk.Menu(self.root, tearoff=0)
         sub_menu = tk.Menu(menu, tearoff=0)
         menu.add_cascade(label="Options", menu=sub_menu)
+        sub_menu.add_separator()
         sub_menu.add_command(label='Refresh Current Variation', command=self.refresh)
         sub_menu.add_separator()
         sub_menu.add_command(label='Load PGN', command=self.open_pgn_file)
         sub_menu.add_separator()
         sub_menu.add_command(label='Exit Training Module', command=self.end_it)
+        sub_menu.add_separator()
         return menu
 
 
